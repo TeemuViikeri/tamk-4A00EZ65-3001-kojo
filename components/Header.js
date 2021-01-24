@@ -8,9 +8,7 @@ const Header = (props) => {
   return (
     <View style={styles.container}>
       {/* Use custom text component which will turn into a header throught isHeader prop */}
-      <RobotoText isHeader={true}>
-        {props.headerText}
-      </RobotoText>
+      <RobotoText isHeader={true}>{props.headerText}</RobotoText>
     </View>
   )
 }
