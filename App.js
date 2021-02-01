@@ -1,29 +1,57 @@
 // Project components
 import { StatusBar } from 'expo-status-bar'
-import React, { useState } from 'react'
-import { StyleSheet, View, ScrollView, FlatList } from 'react-native'
+import React, { useState, useEffect } from 'react'
+import { StyleSheet, View, Button } from 'react-native'
 import Constants from 'expo-constants'
 import uuid from 'uuid'
 
 // Custom components
-import InputText from './components/InputText'
+import EditTask from './components/EditTask'
 import ItemList from './components/ItemList'
+import Timer from './components/Timer'
 
 export default function App() {
-  // Declare a variable 'tasks' and a Hook 'setTasks'
-  // Initiate 'tasks' with empty array
   const [tasks, setTasks] = useState([])
+  const [isEditViewVisible, setEditViewVisibility] = useState(false)
+  const [selectedTask, setSelectedTask] = useState(undefined)
 
   // Function for adding a new to 'tasks' via 'setTasks' Hook
   const addTaskHandler = (task) => {
-    // Generate UUID (Universally unique identifier) for task's key
-    setTasks([...tasks, { key: uuid.v4(), text: task }])
+    // If there is a selected task defined...
+    if (selectedTask !== undefined) {
+      // Store 'task' argument to selected task's 'text' property 
+      selectedTask.text = task
+    } else {
+      // Generate UUID (Universally unique identifier) for task's key
+      setTasks([...tasks, { key: uuid.v4(), text: task }])
+    }
+
+    // Set showEdit
+    showEditView(false)
   }
 
-  // Function for deleting a 'tasks' via 'setTasks' Hook
-  const deleteTaskHandler = (id) => {
-    // filter() creates a new array with all elements that pass the test implemented by the provided function
-    setTasks(tasks.filter((task) => task.key !== id))
+  const onRemove = (key) => {
+    // Remove item from 'tasks' which has correct key property
+    setTasks(tasks.filter((item) => item.key !== key))
+  }
+
+  const onItemPressed = (key) => {
+    // Store the task with the correct key property to the 'currentTask' variable
+    let currentTask = tasks.find((task) => task.key == key)
+    // Set 'currentTask' as the selected task
+    setSelectedTask(currentTask)
+    // Open edit view window
+    showEditView(true)
+  }
+
+  const showEditView = (isShown) => {
+    // If isShown argument is 'false', don't show selected task's window on screen
+    if (!isShown) {
+      setSelectedTask(undefined)
+    }
+
+    // Open or close edit view window 
+    setEditViewVisibility(isShown)
   }
 
   return (
@@ -31,17 +59,18 @@ export default function App() {
       <View style={stylesLight.statusBar}>
         <StatusBar style='auto' />
       </View>
-
-      {/* 
-        Create input field for adding task 
-        Send addTaskHandler() as a prop to InputText as a submit event function 
-      */}
-      <InputText submitText='OK' onSubmitPressed={addTaskHandler} />
-      {/* 
-        Create a list container for added task items
-        Send deleteTaskHandler() as a prop to ItemList as a press and delete event function 
-      */}
-      <ItemList data={tasks} itemPressHandler={deleteTaskHandler} />
+      <View>
+        <Timer time={5} func={() => console.log("STOP")}/>
+      </View>
+      <ItemList data={tasks} onPress={onItemPressed} onLongPress={onRemove} />
+      <EditTask
+        onSubmitPressed={addTaskHandler}
+        isVisible={isEditViewVisible}
+        closeView={() => showEditView(false)}
+        // If selected task isn't undefined, send current selected task's 'text' property as a prop
+        text={selectedTask !== undefined ? selectedTask.text : undefined}
+      />
+      <Button title='Add task' onPress={() => showEditView(true)} />
     </View>
   )
 }
@@ -62,6 +91,7 @@ const stylesLight = StyleSheet.create({
     width: 100,
     color: 'black',
   },
+  time: {},
 })
 
 const stylesDark = StyleSheet.create({

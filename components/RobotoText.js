@@ -15,7 +15,11 @@ const RobotoText = (props) => {
           {props.children}
         </Text>
       ))
-    : (text = <Text style={styles.text}>{props.children}</Text>)
+    : (text = (
+        <Text style={[styles.text, { textAlign: props.align }]}>
+          {props.children}
+        </Text>
+      ))
 
   // Render Text component in variable 'text'
   return text
