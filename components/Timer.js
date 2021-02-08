@@ -9,7 +9,7 @@ export default function Timer(props) {
   useEffect(() => {
     let intervalId
 
-    // If 'isActive' is true and 'time' is 0... 
+    // If 'isActive' is true and 'time' is 0...
     if (isActive && time === 0) {
       // Set isActive to false
       setIsActive((prevIsActive) => !prevIsActive)
@@ -22,7 +22,7 @@ export default function Timer(props) {
     }
 
     return () => {
-      // clears interval running when component unmounts.
+      // Clears interval running when component unmounts.
       clearInterval(intervalId)
     }
     // Run useEffect() again only when 'time' state variable changes
