@@ -12,7 +12,7 @@ const EditTask = (props) => {
   return (
     // The Modal component is a basic way to present content above an enclosing view.
     <Modal
-      // Modal uses fade animation to come into view 
+      // Modal uses fade animation to come into view
       animationType='fade'
       // Sets Modal to be transparent
       transparent={true}

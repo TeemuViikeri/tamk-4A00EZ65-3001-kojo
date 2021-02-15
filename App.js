@@ -6,6 +6,7 @@ import Constants from 'expo-constants'
 import { v4 as uuidv4 } from 'uuid'
 
 // Custom components
+import CameraView from './components/CameraView'
 import EditTask from './components/EditTask'
 import ItemList from './components/ItemList'
 import { loadTasks, saveTasks } from './data/TaskStorage'
@@ -15,12 +16,13 @@ export default function App() {
   const [tasks, setTasks] = useState([])
   const [isEditViewVisible, setEditViewVisibility] = useState(false)
   const [selectedTask, setSelectedTask] = useState(undefined)
+  const [isCameraVisible, setIsCameraVisible] = useState(false)
 
-  // Load data from persisten storage (AsyncStorage) and set them to 'tasks' 
+  // Load data from persisten storage (AsyncStorage) and set them to 'tasks'
   const loadData = async () => {
     console.log('Loading tasks')
     let tasks = await loadTasks()
-    console.log(tasks);
+    // console.log(tasks)
     console.log('Tasks loaded')
     setTasks(tasks)
   }
@@ -37,31 +39,37 @@ export default function App() {
 
   // Function for adding a new to 'tasks' via 'setTasks' Hook
   const addTaskHandler = (title) => {
+    let task = createTask(title, '', Date.now(), '', '', '', Priority.medium)
+
     // If there is a selected task defined...
     if (selectedTask !== undefined) {
       // Store title as current selectedTask's title
       selectedTask.title = title
-      saveTasks()
+      // Get tasks that aren't the selectedTask
+      let updatedTasks = tasks.filter((task) => task.key !== selectedTask.key)
+      setTasks([...updatedTasks, task])
     } else {
-      // Create new task object
-      task = {
-        key: uuidv4(),
-        title,
-        text: "",
-        date: new Date(2021, 2, 28),
-        location: {
-          latitude: '60',
-          longitude: '60',
-        },
-        picPath: './assets/favicon.png',
-        priority: Priority.none,
-      }
       // Set new task to 'tasks'
       setTasks([...tasks, task])
     }
 
     // Set showEdit
     showEditView(false)
+  }
+
+  createTask = (title, text, date, latitude, longitude, picPath, priority) => {
+    return {
+      key: uuidv4(),
+      title,
+      text,
+      date: new Date(2021, 2, 28),
+      location: {
+        latitude,
+        longitude,
+      },
+      picPath,
+      priority,
+    }
   }
 
   // Function for removing a task from 'tasks'
@@ -79,10 +87,18 @@ export default function App() {
     // Open edit view window
     showEditView(true)
   }
-
+  
   // Function to toggle edit view
   const showEditView = (isShown) => {
-    !isShow ? setSelectedTask(undefined) : setEditViewVisibility(isShown)
+    if (!isShown) {
+      setSelectedTask(undefined);
+    }
+
+    setEditViewVisibility(isShown);
+  }
+
+  const closeCamera = () => {
+    setIsCameraVisible(false)
   }
 
   return (
@@ -99,6 +115,8 @@ export default function App() {
         text={selectedTask !== undefined ? selectedTask.title : undefined}
       />
       <Button title='Add task' onPress={() => showEditView(true)} />
+      <CameraView isVisible={isCameraVisible} onClosePressed={closeCamera} />
+      <Button title='Open camera' onPress={() => setIsCameraVisible(true)} />
     </View>
   )
 }

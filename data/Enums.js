@@ -5,7 +5,8 @@ export const Priority = {
   low: 3,
 }
 
-export const GetPriority = (index) => {
+// Uses switch conditional statement to get correct Priority property
+export const getPriority = (index) => {
   switch (index) {
     case 1:
       return Priority.high
@@ -18,7 +19,8 @@ export const GetPriority = (index) => {
   }
 }
 
-export const GetPriorityByName = (name) => {
+// Gets priority number by priority name
+export const getPriorityByName = (name) => {
   let priority = Priority[name.toLowerCase()]
   if (priority === undefined) {
     priority = Priority.none
