@@ -31,5 +31,6 @@ export const loadTasks = async () => {
 // Saves tasks to persistent storage with key 'STORAGE_KEY'
 // NOTE: should this be async or not?
 export const saveTasks = (tasks) => {
+  // console.log(tasks);
   AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
 }

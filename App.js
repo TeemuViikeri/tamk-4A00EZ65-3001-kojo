@@ -3,28 +3,46 @@ import { StatusBar } from 'expo-status-bar'
 import React, { useState, useEffect } from 'react'
 import { StyleSheet, View, Button } from 'react-native'
 import Constants from 'expo-constants'
+import * as FileSystem from 'expo-file-system'
 import { v4 as uuidv4 } from 'uuid'
 
 // Custom components
 import CameraView from './components/CameraView'
 import EditTask from './components/EditTask'
 import ItemList from './components/ItemList'
-import { loadTasks, saveTasks } from './data/TaskStorage'
+
+import { IMAGE_DIRECTORY } from './data/Constants'
 import { Priority } from './data/Enums'
+import { loadTasks, saveTasks } from './data/TaskStorage'
 
 export default function App() {
   const [tasks, setTasks] = useState([])
   const [isEditViewVisible, setEditViewVisibility] = useState(false)
   const [selectedTask, setSelectedTask] = useState(undefined)
   const [isCameraVisible, setIsCameraVisible] = useState(false)
+  const [images, setImages] = useState([])
 
   // Load data from persisten storage (AsyncStorage) and set them to 'tasks'
   const loadData = async () => {
-    console.log('Loading tasks')
+    // console.log('Loading tasks')
     let tasks = await loadTasks()
     // console.log(tasks)
-    console.log('Tasks loaded')
+    // console.log('Tasks loaded')
     setTasks(tasks)
+
+    let pics = await loadPics()
+    setImages(pics)
+    // console.log(pics)
+  }
+
+  const loadPics = async () => {
+    let dir = await FileSystem.readDirectoryAsync(IMAGE_DIRECTORY)
+    let pics = []
+    dir.forEach((val) => {
+      pics.push(IMAGE_DIRECTORY + val)
+    })
+
+    return pics
   }
 
   // Load data only once when application is started
@@ -38,8 +56,9 @@ export default function App() {
   }, [tasks])
 
   // Function for adding a new to 'tasks' via 'setTasks' Hook
-  const addTaskHandler = (title) => {
-    let task = createTask(title, '', Date.now(), '', '', '', Priority.medium)
+  const addTaskHandler = (title, text, date, location, picPath, priority) => {
+    // TODO
+    let task = createTask(title, text, date, location, picPath, priority)
 
     // If there is a selected task defined...
     if (selectedTask !== undefined) {
@@ -57,16 +76,14 @@ export default function App() {
     showEditView(false)
   }
 
-  createTask = (title, text, date, latitude, longitude, picPath, priority) => {
+  // Function which creates a task object
+  createTask = (title, text, date, location, picPath, priority) => {
     return {
       key: uuidv4(),
       title,
       text,
-      date: new Date(2021, 2, 28),
-      location: {
-        latitude,
-        longitude,
-      },
+      date,
+      location,
       picPath,
       priority,
     }
@@ -87,14 +104,14 @@ export default function App() {
     // Open edit view window
     showEditView(true)
   }
-  
-  // Function to toggle edit view
+
+  // Function to toggle edit viewa
   const showEditView = (isShown) => {
     if (!isShown) {
-      setSelectedTask(undefined);
+      setSelectedTask(undefined)
     }
 
-    setEditViewVisibility(isShown);
+    setEditViewVisibility(isShown)
   }
 
   const closeCamera = () => {
@@ -106,16 +123,21 @@ export default function App() {
       <View style={stylesLight.statusBar}>
         <StatusBar style='auto' />
       </View>
+
       <ItemList data={tasks} onPress={onItemPressed} onLongPress={onRemove} />
+
       <EditTask
         onSubmitPressed={addTaskHandler}
         isVisible={isEditViewVisible}
         closeView={() => showEditView(false)}
         // If selected task isn't undefined, send current selected task's 'title' property as a prop
-        text={selectedTask !== undefined ? selectedTask.title : undefined}
+        task={selectedTask}
       />
+
       <Button title='Add task' onPress={() => showEditView(true)} />
+
       <CameraView isVisible={isCameraVisible} onClosePressed={closeCamera} />
+
       <Button title='Open camera' onPress={() => setIsCameraVisible(true)} />
     </View>
   )
@@ -127,7 +149,6 @@ const stylesLight = StyleSheet.create({
     justifyContent: 'flex-start',
     backgroundColor: 'white',
     height: '100%',
-    // The default status bar height for the device
     paddingTop: Constants.statusBarHeight,
   },
   statusBar: {
@@ -137,7 +158,6 @@ const stylesLight = StyleSheet.create({
     width: 100,
     color: 'black',
   },
-  time: {},
 })
 
 const stylesDark = StyleSheet.create({

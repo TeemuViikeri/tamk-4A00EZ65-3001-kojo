@@ -1,24 +1,20 @@
 // Imports
 import React, { useState, useEffect, useRef } from 'react'
-import {
-  StyleSheet,
-  View,
-  Button,
-  Dimensions,
-  Modal,
-} from 'react-native'
+import { StyleSheet, View, Button, Modal, Image } from 'react-native'
 import { Camera } from 'expo-camera'
 import * as FileSystem from 'expo-file-system'
 import RobotoText from './RobotoText'
 import LoadingAnimation from './LoadingAnimation'
 import ImageRoll from './ImageRoll'
-import { IMAGE_DIRECTORY } from '../data/Constants/'
+import {
+  IMAGE_DIRECTORY,
+  WINDOW_WIDTH,
+  WINDOW_HEIGHT,
+} from '../data/Constants/'
 
 // Constants
 const FRONT_CAMERA = 'front'
 const BACK_CAMERA = 'back'
-const WINDOW_WIDTH = Dimensions.get('window').width
-const WINDOW_HEIGHT = Dimensions.get('window').height
 
 export default CameraView = (props) => {
   // Hooks
@@ -90,6 +86,10 @@ export default CameraView = (props) => {
             await FileSystem.moveAsync({ from: photo.uri, to: fullPath })
             // Load pictures from the storage to picturesList hook
             loadPictures()
+            // Set picture path to EditTask hook state 
+            if (props.onPicTaken !== undefined) {
+              props.onPicTaken(fullPath)
+            }
           } catch (error) {
             console.log(error)
           }
@@ -121,7 +121,7 @@ export default CameraView = (props) => {
         </View>
       </Modal>
     )
-  // If user didn't give camera permission
+    // If user didn't give camera permission
   } else if (hasCameraPermission === false) {
     // Show Modal which tells no permission hasn't been given to camera
     return (
@@ -135,7 +135,7 @@ export default CameraView = (props) => {
         </View>
       </Modal>
     )
-  // If user gave camera permission
+    // If user gave camera permission
   } else {
     // Show Modal where camera is being used
     return (
@@ -148,12 +148,7 @@ export default CameraView = (props) => {
           <View style={styles.topButtonsContainer}>
             <Button title='Switch' onPress={toggleCameras} />
           </View>
-          <Camera
-            ref={camera}
-            style={styles.camera}
-            ratio={'4:3'}
-            type={cameraType}
-          ></Camera>
+          <Camera ref={camera} style={styles.camera} type={cameraType}></Camera>
           <View style={styles.bottomButtonsContainer}>
             <Button title='Snap' onPress={snap} />
           </View>
